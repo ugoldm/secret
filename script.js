@@ -1,20 +1,87 @@
 /**
  * Birthday Card - Animation Controller
- * Handles scroll-triggered animations using IntersectionObserver
+ * Handles scroll-triggered animations, gift selection, and modal interactions
  */
 
 (function() {
     'use strict';
 
-    // Flag to ensure animation runs only once
+    // ===== State Flags =====
     let animationTriggered = false;
+    let cakeLanded = false;
+    let giftButtonShown = false;
+    let giftsRevealed = false;
 
-    // DOM Elements
+    // ===== DOM Elements =====
     const surpriseSection = document.getElementById('surprise');
     const cake = document.getElementById('cake');
     const giftText = document.getElementById('giftText');
     const confettiContainer = document.querySelector('.confetti-container');
     const heartsBurst = document.querySelector('.hearts-burst');
+    const giftButton = document.getElementById('giftButton');
+    
+    // Modal elements
+    const modalGifts = document.getElementById('modalGifts');
+    const closeModalGifts = document.getElementById('closeModalGifts');
+    const giftsContainer = document.getElementById('giftsContainer');
+    const giftItems = document.querySelectorAll('.gift-item');
+    
+    const modalYarn = document.getElementById('modalYarn');
+    const btnYarnYes = document.getElementById('btnYarnYes');
+    const btnYarnNo = document.getElementById('btnYarnNo');
+    
+    // Individual gift elements
+    const giftIphone = document.getElementById('giftIphone');
+    const giftTickets = document.getElementById('giftTickets');
+    const giftYarn = document.getElementById('giftYarn');
+    const giftOther = document.getElementById('giftOther');
+
+    // ===== Utility Functions =====
+    
+    /**
+     * Check if user prefers reduced motion
+     */
+    function prefersReducedMotion() {
+        return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    }
+
+    /**
+     * Lock body scroll
+     */
+    function lockScroll() {
+        document.body.classList.add('modal-open');
+    }
+
+    /**
+     * Unlock body scroll
+     */
+    function unlockScroll() {
+        document.body.classList.remove('modal-open');
+    }
+
+    // ===== Cake Animation =====
+    
+    /**
+     * Handle cake landing event
+     */
+    function onCakeLanded() {
+        if (cakeLanded) return;
+        cakeLanded = true;
+        
+        // Show gift button after 3 seconds
+        setTimeout(() => {
+            showGiftButton();
+        }, 3000);
+    }
+
+    /**
+     * Show the gift selection button
+     */
+    function showGiftButton() {
+        if (giftButtonShown) return;
+        giftButtonShown = true;
+        giftButton.classList.add('visible');
+    }
 
     /**
      * Triggers all surprise animations
@@ -27,13 +94,21 @@
         cake.classList.add('animate');
         giftText.classList.add('animate');
         
+        // Listen for cake animation end
+        cake.addEventListener('animationend', onCakeLanded, { once: true });
+        
+        // Fallback timeout in case animationend doesn't fire (e.g., reduced motion)
+        setTimeout(() => {
+            onCakeLanded();
+        }, 1500);
+        
         // Trigger confetti and hearts with slight delay
         setTimeout(() => {
             confettiContainer.classList.add('animate');
             heartsBurst.classList.add('animate');
         }, 300);
 
-        // Store in sessionStorage to remember animation was triggered
+        // Store in sessionStorage
         try {
             sessionStorage.setItem('birthdayAnimationPlayed', 'true');
         } catch (e) {
@@ -41,13 +116,242 @@
         }
     }
 
+    // ===== Modal Functions =====
+    
     /**
-     * Check if user prefers reduced motion
+     * Open gifts modal
      */
-    function prefersReducedMotion() {
-        return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    function openGiftsModal() {
+        modalGifts.classList.add('active');
+        lockScroll();
+        modalGifts.focus();
+        
+        // Reveal gifts sequentially
+        if (!giftsRevealed) {
+            revealGiftsSequentially();
+            giftsRevealed = true;
+        }
     }
 
+    /**
+     * Close gifts modal
+     */
+    function closeGiftsModal() {
+        modalGifts.classList.remove('active');
+        
+        // Only unlock scroll if yarn modal is not open
+        if (!modalYarn.classList.contains('active')) {
+            unlockScroll();
+        }
+        
+        giftButton.focus();
+    }
+
+    /**
+     * Open yarn confirmation modal
+     */
+    function openYarnModal() {
+        modalYarn.classList.add('active');
+        modalYarn.focus();
+    }
+
+    /**
+     * Close yarn modal
+     */
+    function closeYarnModal() {
+        modalYarn.classList.remove('active');
+        
+        // Keep scroll locked if gifts modal is still open
+        if (!modalGifts.classList.contains('active')) {
+            unlockScroll();
+        }
+    }
+
+    /**
+     * Reveal gifts one by one with delay
+     */
+    function revealGiftsSequentially() {
+        const gifts = [giftIphone, giftTickets, giftYarn, giftOther];
+        const delay = prefersReducedMotion() ? 100 : 400;
+        
+        gifts.forEach((gift, index) => {
+            setTimeout(() => {
+                gift.classList.add('visible');
+                gift.setAttribute('tabindex', '0');
+            }, delay * (index + 1));
+        });
+    }
+
+    // ===== Gift Behaviors =====
+    
+    /**
+     * iPhone: Hide on hover, show on leave
+     */
+    function initIphoneBehavior() {
+        giftIphone.addEventListener('mouseenter', () => {
+            giftIphone.classList.add('hidden');
+        });
+        
+        giftIphone.addEventListener('mouseleave', () => {
+            giftIphone.classList.remove('hidden');
+        });
+        
+        // Touch support: toggle on tap
+        let iphoneTouched = false;
+        giftIphone.addEventListener('touchstart', (e) => {
+            if (!iphoneTouched) {
+                e.preventDefault();
+                giftIphone.classList.add('hidden');
+                iphoneTouched = true;
+                
+                // Reset after a short delay
+                setTimeout(() => {
+                    giftIphone.classList.remove('hidden');
+                    iphoneTouched = false;
+                }, 1500);
+            }
+        }, { passive: false });
+    }
+
+    /**
+     * Tickets: Run away from cursor
+     */
+    function initTicketsBehavior() {
+        let ticketX = 0;
+        let ticketY = 0;
+        
+        giftTickets.addEventListener('mouseenter', (e) => {
+            runAwayFromCursor(e);
+        });
+        
+        giftTickets.addEventListener('mousemove', (e) => {
+            runAwayFromCursor(e);
+        });
+        
+        function runAwayFromCursor(e) {
+            const rect = giftTickets.getBoundingClientRect();
+            const containerRect = giftsContainer.getBoundingClientRect();
+            
+            // Get element center
+            const centerX = rect.left + rect.width / 2;
+            const centerY = rect.top + rect.height / 2;
+            
+            // Direction from cursor to element center
+            const dirX = centerX - e.clientX;
+            const dirY = centerY - e.clientY;
+            
+            // Normalize and apply movement
+            const distance = Math.sqrt(dirX * dirX + dirY * dirY);
+            if (distance < 1) return;
+            
+            const moveDistance = 60;
+            const moveX = (dirX / distance) * moveDistance;
+            const moveY = (dirY / distance) * moveDistance;
+            
+            // Calculate new position
+            ticketX += moveX;
+            ticketY += moveY;
+            
+            // Constrain to container bounds
+            const maxX = (containerRect.width - rect.width) / 2;
+            const maxY = (containerRect.height - rect.height) / 2;
+            
+            ticketX = Math.max(-maxX, Math.min(maxX, ticketX));
+            ticketY = Math.max(-maxY, Math.min(maxY, ticketY));
+            
+            giftTickets.classList.add('running');
+            giftTickets.style.transform = `translate(${ticketX}px, ${ticketY}px) scale(1)`;
+        }
+        
+        // Touch support
+        giftTickets.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            const touch = e.touches[0];
+            
+            // Random direction for touch
+            const angle = Math.random() * Math.PI * 2;
+            const moveDistance = 50;
+            
+            ticketX += Math.cos(angle) * moveDistance;
+            ticketY += Math.sin(angle) * moveDistance;
+            
+            const containerRect = giftsContainer.getBoundingClientRect();
+            const rect = giftTickets.getBoundingClientRect();
+            const maxX = (containerRect.width - rect.width) / 2;
+            const maxY = (containerRect.height - rect.height) / 2;
+            
+            ticketX = Math.max(-maxX, Math.min(maxX, ticketX));
+            ticketY = Math.max(-maxY, Math.min(maxY, ticketY));
+            
+            giftTickets.classList.add('running');
+            giftTickets.style.transform = `translate(${ticketX}px, ${ticketY}px) scale(1)`;
+        }, { passive: false });
+    }
+
+    /**
+     * Yarn: Open second modal on click
+     */
+    function initYarnBehavior() {
+        giftYarn.addEventListener('click', () => {
+            openYarnModal();
+        });
+        
+        giftYarn.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                openYarnModal();
+            }
+        });
+    }
+
+    // ===== Event Listeners =====
+    
+    /**
+     * Initialize all event listeners
+     */
+    function initEventListeners() {
+        // Gift button click
+        giftButton.addEventListener('click', openGiftsModal);
+        
+        // Close gifts modal
+        closeModalGifts.addEventListener('click', closeGiftsModal);
+        
+        // Close modal on overlay click
+        modalGifts.addEventListener('click', (e) => {
+            if (e.target === modalGifts) {
+                closeGiftsModal();
+            }
+        });
+        
+        modalYarn.addEventListener('click', (e) => {
+            if (e.target === modalYarn) {
+                closeYarnModal();
+            }
+        });
+        
+        // Yarn modal buttons
+        btnYarnYes.addEventListener('click', closeYarnModal);
+        btnYarnNo.addEventListener('click', closeYarnModal);
+        
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                if (modalYarn.classList.contains('active')) {
+                    closeYarnModal();
+                } else if (modalGifts.classList.contains('active')) {
+                    closeGiftsModal();
+                }
+            }
+        });
+        
+        // Initialize gift behaviors
+        initIphoneBehavior();
+        initTicketsBehavior();
+        initYarnBehavior();
+    }
+
+    // ===== Scroll Observer =====
+    
     /**
      * Initialize IntersectionObserver for scroll-triggered animation
      */
@@ -61,34 +365,36 @@
                 giftText.style.opacity = '1';
                 giftText.style.transform = 'translateY(0)';
                 animationTriggered = true;
+                cakeLanded = true;
+                
+                // Show gift button immediately (since animation already played)
+                setTimeout(() => {
+                    showGiftButton();
+                }, 500);
                 return;
             }
         } catch (e) {
             // SessionStorage not available, continue normally
         }
 
-        // Observer options - trigger when 60% of section is visible
         const observerOptions = {
-            root: null, // viewport
+            root: null,
             rootMargin: '0px',
-            threshold: 0.4 // Trigger when 40% visible (top of section at ~60% viewport height)
+            threshold: 0.4
         };
 
         const observer = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
                 if (entry.isIntersecting && !animationTriggered) {
-                    // Small delay for better effect
                     setTimeout(() => {
                         triggerSurpriseAnimation();
                     }, 100);
                     
-                    // Disconnect observer after triggering
                     observer.disconnect();
                 }
             });
         }, observerOptions);
 
-        // Start observing
         if (surpriseSection) {
             observer.observe(surpriseSection);
         }
@@ -99,12 +405,15 @@
      */
     function handleReducedMotion() {
         if (prefersReducedMotion()) {
-            // For users who prefer reduced motion, show content immediately without animations
             cake.style.transform = 'translateY(0)';
             cake.style.opacity = '1';
             giftText.style.opacity = '1';
             giftText.style.transform = 'translateY(0)';
             animationTriggered = true;
+            cakeLanded = true;
+            
+            // Show button with minimal delay
+            setTimeout(showGiftButton, 1000);
         }
     }
 
@@ -143,6 +452,8 @@
         }, { passive: true });
     }
 
+    // ===== Initialization =====
+    
     /**
      * Initialize everything when DOM is ready
      */
@@ -151,6 +462,7 @@
         initScrollObserver();
         initScrollHint();
         initParallax();
+        initEventListeners();
     }
 
     // Wait for DOM to be ready

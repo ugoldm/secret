@@ -121,6 +121,11 @@
         
         <p class="gift-text" id="giftText">подарочек для зайки</p>
         
+        <!-- Gift Selection Button -->
+        <button class="gift-button" id="giftButton" type="button" aria-label="Выбрать подарочек">
+            Выбрать подарочек
+        </button>
+        
         <div class="hearts-burst" aria-hidden="true">
             <span class="burst-heart">💖</span>
             <span class="burst-heart">💗</span>
@@ -135,6 +140,43 @@
     <footer class="footer">
         <p>С любовью 💕</p>
     </footer>
+
+    <!-- Modal #1: Gift Selection -->
+    <div class="modal-overlay" id="modalGifts" role="dialog" aria-modal="true" aria-labelledby="modalGiftsTitle">
+        <div class="modal-content modal-gifts">
+            <button class="modal-close" id="closeModalGifts" aria-label="Закрыть">&times;</button>
+            <h2 class="modal-title" id="modalGiftsTitle">Выбери подарочек 🎁</h2>
+            <div class="gifts-container" id="giftsContainer">
+                <div class="gift-item" id="giftIphone" data-gift="iphone">
+                    <span class="gift-icon">📱</span>
+                    <span class="gift-name">Iphone 17</span>
+                </div>
+                <div class="gift-item" id="giftTickets" data-gift="tickets">
+                    <span class="gift-icon">✈️</span>
+                    <span class="gift-name">Билеты в Нью-Йорк</span>
+                </div>
+                <div class="gift-item" id="giftYarn" data-gift="yarn">
+                    <span class="gift-icon">🧶</span>
+                    <span class="gift-name">10 кг пряжи</span>
+                </div>
+                <div class="gift-item" id="giftOther" data-gift="other">
+                    <span class="gift-icon">🎁</span>
+                    <span class="gift-name">Кое-что другое</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal #2: Yarn Confirmation -->
+    <div class="modal-overlay modal-nested" id="modalYarn" role="dialog" aria-modal="true" aria-labelledby="modalYarnTitle">
+        <div class="modal-content modal-yarn">
+            <h2 class="modal-title" id="modalYarnTitle">Ты же не хочешь на день рождения получить пряжу?</h2>
+            <div class="modal-buttons">
+                <button class="modal-btn" id="btnYarnYes" type="button">да, не хочу</button>
+                <button class="modal-btn" id="btnYarnNo" type="button">нет, не хочу</button>
+            </div>
+        </div>
+    </div>
 
     <script src="script.js"></script>
 </body>
