@@ -1113,6 +1113,60 @@ body.modal-open {
     transform: scale(1);
 }
 
+/* Variant Cards */
+.variant-cards {
+    display: flex;
+    justify-content: center;
+    gap: 1.5rem;
+    margin-top: 2rem;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.5s ease, transform 0.5s ease;
+}
+
+.variant-cards.visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.variant-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 140px;
+    height: 120px;
+    background: linear-gradient(135deg, var(--white) 0%, var(--pink-light) 100%);
+    border: 3px solid var(--pink-soft);
+    border-radius: 20px;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.3s var(--animation-smooth);
+    box-shadow: 0 5px 15px rgba(233, 30, 99, 0.2);
+}
+
+.variant-card:hover {
+    transform: translateY(-5px) scale(1.05);
+    border-color: var(--pink-bright);
+    box-shadow: 0 10px 25px rgba(233, 30, 99, 0.3);
+}
+
+.variant-card:active {
+    transform: scale(0.98);
+}
+
+.variant-icon {
+    font-size: 2.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.variant-text {
+    font-family: var(--font-body);
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--pink-deep);
+}
+
 /* Responsive adjustments for final elements */
 @media (max-width: 768px) {
     .final-button {
@@ -1126,6 +1180,25 @@ body.modal-open {
     
     .final-text-container {
         padding: 1.5rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .variant-cards {
+        gap: 1rem;
+    }
+    
+    .variant-card {
+        width: 120px;
+        height: 100px;
+    }
+    
+    .variant-icon {
+        font-size: 2rem;
+    }
+    
+    .variant-text {
+        font-size: 1rem;
     }
 }
 
@@ -1143,5 +1216,24 @@ body.modal-open {
     .final-gift-reveal {
         font-size: 1.5rem;
         margin-top: 1rem;
+    }
+    
+    .variant-cards {
+        gap: 0.8rem;
+        margin-top: 1.5rem;
+    }
+    
+    .variant-card {
+        width: 100px;
+        height: 90px;
+        border-radius: 15px;
+    }
+    
+    .variant-icon {
+        font-size: 1.8rem;
+    }
+    
+    .variant-text {
+        font-size: 0.9rem;
     }
 }

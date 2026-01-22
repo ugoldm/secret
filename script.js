@@ -47,6 +47,7 @@
         document.getElementById('word3')
     ];
     const finalGiftReveal = document.getElementById('finalGiftReveal');
+    const variantCards = document.getElementById('variantCards');
 
     // ===== Utility Functions =====
     
@@ -414,6 +415,7 @@
         // Reset all words to hidden state
         finalWords.forEach(word => word.classList.remove('visible'));
         finalGiftReveal.classList.remove('visible');
+        variantCards.classList.remove('visible');
         
         modalFinal.classList.add('active');
         lockScroll();
@@ -455,6 +457,11 @@
         setTimeout(() => {
             finalGiftReveal.classList.add('visible');
         }, 300 + wordDelay * 3);
+        
+        // Variant cards - 2 seconds after gift reveal (5000ms total)
+        setTimeout(() => {
+            variantCards.classList.add('visible');
+        }, 300 + wordDelay * 3 + 2000);
     }
     
     /**
