@@ -214,167 +214,108 @@
     }
 
     /**
-     * Tickets: Run away from cursor across the entire screen with edge bouncing
+     * Tickets: Run away from cursor across the entire screen
      */
     function initTicketsBehavior() {
-        let ticketPosX = 0;  // Absolute screen position
-        let ticketPosY = 0;
         let isRunning = false;
-        let initialRect = null;
-        const elementWidth = 90;   // Fixed width when running
-        const elementHeight = 90;  // Fixed height when running
-        const padding = 10;  // Padding from screen edges
+        let currentX = 0;  // Current absolute X position
+        let currentY = 0;  // Current absolute Y position
+        let baseX = 0;     // Initial X position in flow
+        let baseY = 0;     // Initial Y position in flow
+        const elementSize = 90;
+        const padding = 10;
+        const triggerDistance = 100;
+        const moveSpeed = 50;
         
         function startRunning() {
             if (isRunning) return;
             
-            // Get initial position before switching to fixed
-            initialRect = giftTickets.getBoundingClientRect();
-            ticketPosX = initialRect.left;
-            ticketPosY = initialRect.top;
+            // Get current visual position
+            const rect = giftTickets.getBoundingClientRect();
+            baseX = rect.left;
+            baseY = rect.top;
+            currentX = rect.left;
+            currentY = rect.top;
             
-            // Switch to fixed positioning
             giftTickets.classList.add('running');
-            giftTickets.style.left = ticketPosX + 'px';
-            giftTickets.style.top = ticketPosY + 'px';
-            
             isRunning = true;
         }
         
-        function runAwayFromCursor(e) {
-            startRunning();
+        function moveTickets(mouseX, mouseY) {
+            // Calculate center of element
+            const centerX = currentX + elementSize / 2;
+            const centerY = currentY + elementSize / 2;
             
-            // Get element center
-            const centerX = ticketPosX + elementWidth / 2;
-            const centerY = ticketPosY + elementHeight / 2;
+            // Distance from cursor to element center
+            const dx = centerX - mouseX;
+            const dy = centerY - mouseY;
+            const dist = Math.sqrt(dx * dx + dy * dy);
             
-            // Direction from cursor to element center
-            let dirX = centerX - e.clientX;
-            let dirY = centerY - e.clientY;
+            if (dist < 1 || dist > triggerDistance) return;
             
-            // Normalize and apply movement
-            const distance = Math.sqrt(dirX * dirX + dirY * dirY);
-            if (distance < 1) return;
+            // Move away from cursor
+            const strength = (triggerDistance - dist) / triggerDistance;
+            const moveX = (dx / dist) * moveSpeed * strength;
+            const moveY = (dy / dist) * moveSpeed * strength;
             
-            const moveDistance = 80;
-            let moveX = (dirX / distance) * moveDistance;
-            let moveY = (dirY / distance) * moveDistance;
-            
-            // Calculate new position
-            let newX = ticketPosX + moveX;
-            let newY = ticketPosY + moveY;
+            let newX = currentX + moveX;
+            let newY = currentY + moveY;
             
             // Screen bounds
-            const screenWidth = window.innerWidth;
-            const screenHeight = window.innerHeight;
             const minX = padding;
-            const maxX = screenWidth - elementWidth - padding;
+            const maxX = window.innerWidth - elementSize - padding;
             const minY = padding;
-            const maxY = screenHeight - elementHeight - padding;
-            
-            // Bounce off edges
-            if (newX < minX) {
-                newX = minX + (minX - newX); // Bounce back
-                if (newX > maxX) newX = maxX;
-            } else if (newX > maxX) {
-                newX = maxX - (newX - maxX); // Bounce back
-                if (newX < minX) newX = minX;
-            }
-            
-            if (newY < minY) {
-                newY = minY + (minY - newY); // Bounce back
-                if (newY > maxY) newY = maxY;
-            } else if (newY > maxY) {
-                newY = maxY - (newY - maxY); // Bounce back
-                if (newY < minY) newY = minY;
-            }
-            
-            ticketPosX = newX;
-            ticketPosY = newY;
-            
-            giftTickets.style.left = ticketPosX + 'px';
-            giftTickets.style.top = ticketPosY + 'px';
-        }
-        
-        giftTickets.addEventListener('mouseenter', (e) => {
-            runAwayFromCursor(e);
-        });
-        
-        giftTickets.addEventListener('mousemove', (e) => {
-            if (isRunning) {
-                runAwayFromCursor(e);
-            }
-        });
-        
-        // Also track mouse movement on the entire document when running
-        document.addEventListener('mousemove', (e) => {
-            if (!isRunning) return;
-            
-            // Check if mouse is close to the tickets
-            const centerX = ticketPosX + elementWidth / 2;
-            const centerY = ticketPosY + elementHeight / 2;
-            const distanceToMouse = Math.sqrt(
-                Math.pow(e.clientX - centerX, 2) + 
-                Math.pow(e.clientY - centerY, 2)
-            );
-            
-            // Run away if mouse is within 150px
-            if (distanceToMouse < 150) {
-                runAwayFromCursor(e);
-            }
-        });
-        
-        // Touch support
-        giftTickets.addEventListener('touchstart', (e) => {
-            e.preventDefault();
-            startRunning();
-            
-            const touch = e.touches[0];
-            
-            // Calculate direction away from touch
-            const centerX = ticketPosX + elementWidth / 2;
-            const centerY = ticketPosY + elementHeight / 2;
-            let dirX = centerX - touch.clientX;
-            let dirY = centerY - touch.clientY;
-            
-            const distance = Math.sqrt(dirX * dirX + dirY * dirY);
-            if (distance < 1) {
-                // Random direction if touch is at center
-                const angle = Math.random() * Math.PI * 2;
-                dirX = Math.cos(angle);
-                dirY = Math.sin(angle);
-            } else {
-                dirX /= distance;
-                dirY /= distance;
-            }
-            
-            const moveDistance = 100;
-            let newX = ticketPosX + dirX * moveDistance;
-            let newY = ticketPosY + dirY * moveDistance;
-            
-            // Screen bounds
-            const screenWidth = window.innerWidth;
-            const screenHeight = window.innerHeight;
-            const minX = padding;
-            const maxX = screenWidth - elementWidth - padding;
-            const minY = padding;
-            const maxY = screenHeight - elementHeight - padding;
-            
-            // Bounce off edges
-            if (newX < minX) newX = minX + (minX - newX);
-            if (newX > maxX) newX = maxX - (newX - maxX);
-            if (newY < minY) newY = minY + (minY - newY);
-            if (newY > maxY) newY = maxY - (newY - maxY);
+            const maxY = window.innerHeight - elementSize - padding;
             
             // Clamp to bounds
             newX = Math.max(minX, Math.min(maxX, newX));
             newY = Math.max(minY, Math.min(maxY, newY));
             
-            ticketPosX = newX;
-            ticketPosY = newY;
+            currentX = newX;
+            currentY = newY;
             
-            giftTickets.style.left = ticketPosX + 'px';
-            giftTickets.style.top = ticketPosY + 'px';
+            // Apply as transform offset from base position
+            const offsetX = currentX - baseX;
+            const offsetY = currentY - baseY;
+            giftTickets.style.transform = `translate(${offsetX}px, ${offsetY}px)`;
+        }
+        
+        // Track mouse movement on the entire document
+        document.addEventListener('mousemove', (e) => {
+            if (!giftTickets.classList.contains('visible')) return;
+            
+            // Start running on first close approach
+            if (!isRunning) {
+                const rect = giftTickets.getBoundingClientRect();
+                const centerX = rect.left + rect.width / 2;
+                const centerY = rect.top + rect.height / 2;
+                const dist = Math.sqrt(
+                    Math.pow(e.clientX - centerX, 2) + 
+                    Math.pow(e.clientY - centerY, 2)
+                );
+                if (dist < triggerDistance) {
+                    startRunning();
+                }
+            }
+            
+            if (isRunning) {
+                moveTickets(e.clientX, e.clientY);
+            }
+        });
+        
+        // Touch support
+        giftTickets.addEventListener('touchstart', (e) => {
+            if (!giftTickets.classList.contains('visible')) return;
+            e.preventDefault();
+            
+            if (!isRunning) startRunning();
+            
+            const touch = e.touches[0];
+            // Move in random direction on touch
+            const angle = Math.random() * Math.PI * 2;
+            const fakeMouseX = currentX + elementSize / 2 - Math.cos(angle) * 50;
+            const fakeMouseY = currentY + elementSize / 2 - Math.sin(angle) * 50;
+            moveTickets(fakeMouseX, fakeMouseY);
         }, { passive: false });
     }
 

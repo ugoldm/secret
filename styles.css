@@ -698,19 +698,15 @@ body {
 /* ===== Tickets Gift - Run Away ===== */
 .gift-item[data-gift="tickets"] {
     transition: opacity 0.4s var(--animation-smooth),
-                left 0.15s ease-out,
-                top 0.15s ease-out,
+                transform 0.12s ease-out,
                 border-color 0.2s ease,
                 box-shadow 0.2s ease;
 }
 
 .gift-item[data-gift="tickets"].running {
-    position: fixed !important;
     z-index: 9999 !important;
-    width: 90px;
-    height: 90px;
     box-shadow: 0 10px 30px rgba(233, 30, 99, 0.4);
-    background: var(--white);
+    border-color: var(--pink-bright);
 }
 
 /* ===== Yarn Gift ===== */
