@@ -388,7 +388,7 @@
             pageWrapper.classList.add('spiral-out');
             
             // Show final screen after spiral animation completes
-            const animDuration = prefersReducedMotion() ? 600 : 2400;
+            const animDuration = prefersReducedMotion() ? 600 : 4800;
             setTimeout(() => {
                 pageWrapper.style.display = 'none';
                 showFinalScreen();
