@@ -224,8 +224,8 @@
         let baseY = 0;     // Initial Y position in flow
         const elementSize = 90;
         const padding = 10;
-        const triggerDistance = 100;
-        const moveSpeed = 50;
+        const triggerDistance = 150;  // Реагирует с большего расстояния
+        const moveSpeed = 120;        // Быстрее убегает
         
         function startRunning() {
             if (isRunning) return;
