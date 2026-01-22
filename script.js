@@ -35,6 +35,18 @@
     const giftTickets = document.getElementById('giftTickets');
     const giftYarn = document.getElementById('giftYarn');
     const giftOther = document.getElementById('giftOther');
+    
+    // Final screen elements
+    const finalScreen = document.getElementById('finalScreen');
+    const finalButton = document.getElementById('finalButton');
+    const modalFinal = document.getElementById('modalFinal');
+    const finalTextContainer = document.getElementById('finalTextContainer');
+    const finalWords = [
+        document.getElementById('word1'),
+        document.getElementById('word2'),
+        document.getElementById('word3')
+    ];
+    const finalGiftReveal = document.getElementById('finalGiftReveal');
 
     // ===== Utility Functions =====
     
@@ -335,6 +347,132 @@
         });
     }
 
+    // ===== Final Sequence (Other Gift) =====
+    
+    let finalSequenceTriggered = false;
+    
+    /**
+     * Trigger the spiral animation and transition to final screen
+     */
+    function triggerFinalSequence() {
+        if (finalSequenceTriggered) return;
+        finalSequenceTriggered = true;
+        
+        // Close the gifts modal first
+        closeGiftsModal();
+        
+        // Create wrapper for spiral animation if not exists
+        let pageWrapper = document.querySelector('.page-wrapper');
+        if (!pageWrapper) {
+            pageWrapper = document.createElement('div');
+            pageWrapper.className = 'page-wrapper';
+            
+            // Move all body children except final-screen and modals into wrapper
+            const children = Array.from(document.body.children);
+            children.forEach(child => {
+                if (!child.classList.contains('final-screen') && 
+                    !child.classList.contains('modal-overlay') &&
+                    child.tagName !== 'SCRIPT') {
+                    pageWrapper.appendChild(child);
+                }
+            });
+            document.body.insertBefore(pageWrapper, document.body.firstChild);
+        }
+        
+        // Lock interactions during animation
+        document.body.style.overflow = 'hidden';
+        document.body.style.pointerEvents = 'none';
+        
+        // Start spiral animation
+        setTimeout(() => {
+            pageWrapper.classList.add('spiral-out');
+            
+            // Show final screen after spiral animation completes
+            const animDuration = prefersReducedMotion() ? 600 : 2400;
+            setTimeout(() => {
+                pageWrapper.style.display = 'none';
+                showFinalScreen();
+            }, animDuration);
+        }, 100);
+    }
+    
+    /**
+     * Show the white final screen
+     */
+    function showFinalScreen() {
+        document.body.style.overflow = '';
+        document.body.style.pointerEvents = '';
+        
+        finalScreen.classList.add('active');
+        finalButton.focus();
+    }
+    
+    /**
+     * Open the final modal with word-by-word reveal
+     */
+    function openFinalModal() {
+        // Reset all words to hidden state
+        finalWords.forEach(word => word.classList.remove('visible'));
+        finalGiftReveal.classList.remove('visible');
+        
+        modalFinal.classList.add('active');
+        lockScroll();
+        
+        // Start word-by-word reveal
+        revealFinalText();
+    }
+    
+    /**
+     * Close the final modal
+     */
+    function closeFinalModal() {
+        modalFinal.classList.remove('active');
+        unlockScroll();
+    }
+    
+    /**
+     * Reveal text word by word with delays
+     */
+    function revealFinalText() {
+        const wordDelay = 1000;
+        
+        // "твой" - immediately
+        setTimeout(() => {
+            finalWords[0].classList.add('visible');
+        }, 300);
+        
+        // "подарок" - after 1000ms
+        setTimeout(() => {
+            finalWords[1].classList.add('visible');
+        }, 300 + wordDelay);
+        
+        // "это" - after 2000ms
+        setTimeout(() => {
+            finalWords[2].classList.add('visible');
+        }, 300 + wordDelay * 2);
+        
+        // "КОНДИТЕРСКИЙ МАСТЕР-КЛАСС" - after 3000ms
+        setTimeout(() => {
+            finalGiftReveal.classList.add('visible');
+        }, 300 + wordDelay * 3);
+    }
+    
+    /**
+     * Other gift: Trigger final sequence on click
+     */
+    function initOtherBehavior() {
+        giftOther.addEventListener('click', () => {
+            triggerFinalSequence();
+        });
+        
+        giftOther.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                triggerFinalSequence();
+            }
+        });
+    }
+
     // ===== Event Listeners =====
     
     /**
@@ -367,7 +505,9 @@
         // Keyboard navigation
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') {
-                if (modalYarn.classList.contains('active')) {
+                if (modalFinal.classList.contains('active')) {
+                    closeFinalModal();
+                } else if (modalYarn.classList.contains('active')) {
                     closeYarnModal();
                 } else if (modalGifts.classList.contains('active')) {
                     closeGiftsModal();
@@ -379,6 +519,17 @@
         initIphoneBehavior();
         initTicketsBehavior();
         initYarnBehavior();
+        initOtherBehavior();
+        
+        // Final button click
+        finalButton.addEventListener('click', openFinalModal);
+        
+        // Close final modal on overlay click
+        modalFinal.addEventListener('click', (e) => {
+            if (e.target === modalFinal) {
+                closeFinalModal();
+            }
+        });
     }
 
     // ===== Scroll Observer =====

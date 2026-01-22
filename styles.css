@@ -950,3 +950,198 @@ body.modal-open {
         background: var(--white);
     }
 }
+
+/* ===== Spiral Animation ===== */
+.page-wrapper {
+    transition: none;
+    transform-origin: center center;
+    will-change: transform, opacity, filter;
+}
+
+.page-wrapper.spiral-out {
+    animation: spiralOut 2400ms cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    pointer-events: none;
+}
+
+@keyframes spiralOut {
+    0% {
+        transform: rotate(0deg) scale(1);
+        opacity: 1;
+        filter: blur(0);
+    }
+    50% {
+        transform: rotate(360deg) scale(0.5);
+        opacity: 0.7;
+        filter: blur(2px);
+    }
+    100% {
+        transform: rotate(720deg) scale(0);
+        opacity: 0;
+        filter: blur(10px);
+    }
+}
+
+/* Reduced motion alternative */
+@media (prefers-reduced-motion: reduce) {
+    .page-wrapper.spiral-out {
+        animation: fadeOutSimple 600ms ease-out forwards;
+    }
+    
+    @keyframes fadeOutSimple {
+        from { opacity: 1; }
+        to { opacity: 0; }
+    }
+}
+
+/* ===== Final White Screen ===== */
+.final-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: #ffffff;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 2000;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.5s ease, visibility 0.5s ease;
+}
+
+.final-screen.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+.final-button {
+    font-family: var(--font-body);
+    font-size: clamp(1.2rem, 4vw, 1.8rem);
+    font-weight: 700;
+    color: var(--white);
+    background: linear-gradient(135deg, var(--pink-bright), var(--pink-deep));
+    border: none;
+    border-radius: 50px;
+    padding: 1.25rem 3rem;
+    cursor: pointer;
+    box-shadow: 
+        0 10px 40px rgba(233, 30, 99, 0.4),
+        0 0 0 0 rgba(233, 30, 99, 0.4);
+    transition: all 0.3s var(--animation-smooth);
+    animation: pulseButton 2s ease-in-out infinite;
+}
+
+.final-button:hover {
+    transform: scale(1.05);
+    box-shadow: 
+        0 15px 50px rgba(233, 30, 99, 0.5),
+        0 0 0 10px rgba(233, 30, 99, 0.1);
+}
+
+.final-button:active {
+    transform: scale(0.98);
+}
+
+@keyframes pulseButton {
+    0%, 100% {
+        box-shadow: 
+            0 10px 40px rgba(233, 30, 99, 0.4),
+            0 0 0 0 rgba(233, 30, 99, 0.4);
+    }
+    50% {
+        box-shadow: 
+            0 10px 40px rgba(233, 30, 99, 0.4),
+            0 0 0 15px rgba(233, 30, 99, 0);
+    }
+}
+
+/* ===== Final Modal ===== */
+#modalFinal {
+    z-index: 3000; /* Above final-screen which is z-index: 2000 */
+}
+
+.modal-final {
+    max-width: 600px;
+    min-height: 300px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.final-text-container {
+    text-align: center;
+    padding: 2rem;
+}
+
+.final-word {
+    display: inline-block;
+    font-family: var(--font-body);
+    font-size: clamp(1.5rem, 5vw, 2.2rem);
+    font-weight: 600;
+    color: var(--pink-deep);
+    margin: 0 0.3em;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.4s ease, transform 0.4s ease;
+}
+
+.final-word.visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.final-gift-reveal {
+    display: block;
+    font-family: var(--font-display);
+    font-size: clamp(1.8rem, 7vw, 3.5rem);
+    font-weight: 700;
+    color: var(--pink-bright);
+    text-align: center;
+    margin-top: 1.5rem;
+    letter-spacing: 0.05em;
+    text-shadow: 
+        2px 2px 0 var(--pink-soft),
+        4px 4px 0 rgba(233, 30, 99, 0.2);
+    opacity: 0;
+    transform: scale(0.5);
+    transition: opacity 0.6s ease, transform 0.6s var(--animation-bounce);
+}
+
+.final-gift-reveal.visible {
+    opacity: 1;
+    transform: scale(1);
+}
+
+/* Responsive adjustments for final elements */
+@media (max-width: 768px) {
+    .final-button {
+        padding: 1rem 2rem;
+        font-size: 1.1rem;
+    }
+    
+    .modal-final {
+        min-height: 250px;
+    }
+    
+    .final-text-container {
+        padding: 1.5rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .final-button {
+        padding: 0.9rem 1.5rem;
+        font-size: 1rem;
+    }
+    
+    .final-word {
+        font-size: 1.3rem;
+        margin: 0 0.2em;
+    }
+    
+    .final-gift-reveal {
+        font-size: 1.5rem;
+        margin-top: 1rem;
+    }
+}
